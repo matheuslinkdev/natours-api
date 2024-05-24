@@ -1,10 +1,21 @@
 const fs = require('fs');
 
 const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}../../../dev-data/data/tours-simple.json`)
+  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
 
-const getAllTours = (req, res) => {
+exports.checkID = (req, res, next, val) => {
+  console.log(`Tour id is : ${val}`);
+  if (req.params.id * 1 > tours.length) {
+    return res.status(404).json({
+      status: 'Fail',
+      message: 'Invalid ID',
+    });
+  }
+  next();
+};
+
+exports.getAllTours = (req, res) => {
   res.status(200).json({
     status: 'Success',
     results: tours.length,
@@ -13,23 +24,10 @@ const getAllTours = (req, res) => {
     },
   });
 };
-const getTourById = (req, res) => {
+
+exports.getTourById = (req, res) => {
   const tourId = Number(req.params.id);
   const tour = tours.find((t) => t.id === tourId);
-
-  if (tourId > tours.length) {
-    return res.status(400).json({
-      status: 'Fail',
-      message: 'Invalid ID',
-    });
-  }
-
-  if (!tour) {
-    return res.status(400).json({
-      status: 'Fail',
-      message: 'Invalid ID',
-    });
-  }
 
   if (!tour) {
     return res.status(404).json({ message: 'Tour not found' });
@@ -44,7 +42,7 @@ const getTourById = (req, res) => {
   });
 };
 
-const createTour = (req, res) => {
+exports.createTour = (req, res) => {
   const newId = tours[tours.length - 1].id + 1;
   const newTour = Object.assign({ id: newId }, req.body);
 
@@ -64,14 +62,7 @@ const createTour = (req, res) => {
   );
 };
 
-const updateTour = (req, res) => {
-  if (Number(req.params.id) > tours.length) {
-    return res.status(404).json({
-      status: 'Fail',
-      message: 'Invalid ID',
-    });
-  }
-
+exports.updateTour = (req, res) => {
   res.status(200).json({
     status: 'Success',
     data: {
@@ -80,7 +71,7 @@ const updateTour = (req, res) => {
   });
 };
 
-const deleteTour = (req, res) => {
+exports.deleteTour = (req, res) => {
   if (Number(req.params.id) > tours.length) {
     return res.status(404).json({
       status: 'Fail',
@@ -94,12 +85,4 @@ const deleteTour = (req, res) => {
       tour: null,
     },
   });
-};
-
-module.exports = {
-  getAllTours,
-  getTourById,
-  createTour,
-  updateTour,
-  deleteTour,
 };
